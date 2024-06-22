@@ -131,7 +131,7 @@ var fetchCmd = &cobra.Command{
 					errored = true
 				}
 			case <-sigch:
-				logger.Println("yuukafetch: caught interrupt, finishing")
+				logger.Log("yuukafetch: caught interrupt, finishing")
 				cancel()
 
 				finishing = true
