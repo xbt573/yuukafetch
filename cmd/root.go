@@ -122,6 +122,7 @@ var fetchCmd = &cobra.Command{
 			}()
 
 			errored := false
+			finishing := false
 
 			select {
 			case err := <-errch:
@@ -132,12 +133,21 @@ var fetchCmd = &cobra.Command{
 			case <-sigch:
 				logger.Println("yuukafetch: caught interrupt, finishing")
 				cancel()
+
+				finishing = true
+			case <-donech:
 			}
 
-			<-donech
+			if finishing || errored {
+				<-donech
+			}
 
 			if errored {
 				os.Exit(1)
+			}
+
+			if finishing {
+				return
 			}
 		}
 	},
