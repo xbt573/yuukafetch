@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path"
 	"runtime"
 	"runtime/debug"
@@ -103,9 +105,38 @@ var fetchCmd = &cobra.Command{
 				},
 			})
 
-			err := downloaderInstance.Download()
-			if err != nil {
-				logger.Errorf("yuukafetch: downloader failed, %s", err.Error())
+			errch := make(chan error)
+			sigch := make(chan os.Signal, 10)
+			donech := make(chan any)
+			ctx, cancel := context.WithCancel(context.Background())
+
+			signal.Notify(sigch, os.Interrupt)
+
+			go func() {
+				err := downloaderInstance.Download(ctx)
+				if err != nil {
+					errch <- err
+				}
+				cancel()
+				donech <- nil
+			}()
+
+			errored := false
+
+			select {
+			case err := <-errch:
+				if err != nil {
+					logger.Errorf("yuukafetch: downloader failed, %s", err.Error())
+					errored = true
+				}
+			case <-sigch:
+				logger.Println("yuukafetch: caught interrupt, finishing")
+				cancel()
+			}
+
+			<-donech
+
+			if errored {
 				os.Exit(1)
 			}
 		}

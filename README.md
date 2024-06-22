@@ -77,3 +77,4 @@ Only fields that is required: `downloads` and it's children
 
 ## Recommendations
 1. Set chooser to `mpv --loop --autofit=90%x90%` if you plan to pick videos, but mpv is so much slower, be warned
+2. One Ctrl+C is enough, please wait for arts to download to avoid corrupted files

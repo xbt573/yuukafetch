@@ -81,7 +81,8 @@ func (d *Downloader) exists(file, outputDir string, checkDirs []string) bool {
 	return false
 }
 
-func (d *Downloader) Download() error {
+// shameful peace of code, because of error handling
+func (d *Downloader) Download(ctx context.Context) (err error) {
 	gelbooruInstance := gelbooru.NewGelbooru(d.gelbooruOptions)
 
 	res, err := gelbooruInstance.Fetch(d.tags, 0, 1)
@@ -95,30 +96,31 @@ func (d *Downloader) Download() error {
 	}
 
 	current := 0
-	count := res.Attributes.Count
+	count := res.Attributes.Count // то что он не юзается — пиздёж
 	errch := make(chan error, 1)
 
-	ctx, cancel := context.WithCancel(context.Background())
+	progressbarCtx, cancel := context.WithCancel(context.Background())
 
 	if d.progressbarInstance != nil {
-		go d.progressbarInstance.Start(ctx)
+		go d.progressbarInstance.Start(progressbarCtx)
 	}
 
+pidloop:
 	for pid := 0; ; pid++ {
 		select {
-		case err := <-errch:
-			cancel()
-
+		case err = <-errch:
 			logger.Errorf("downloader: error: %s", err.Error())
 			logger.Error("downloader: ensure your directory exists if you have \"no such file or directory\" error")
-			os.Exit(1)
+			break pidloop
+		case <-ctx.Done():
+			logger.Log("downloader: finishing")
+			break pidloop
 		default:
 		}
 
 		logger.Logf("downloader: fetching page %d", pid+1) // normalizing page id for normal people
 		res, err := gelbooruInstance.Fetch(d.tags, pid, 0)
 		if err != nil {
-			cancel() // fucking warnings
 			return err
 		}
 
@@ -129,18 +131,18 @@ func (d *Downloader) Download() error {
 
 		for _, post := range res.Post {
 			select {
-			case err := <-errch:
-				cancel()
-
+			case err = <-errch:
 				logger.Errorf("downloader: error: %s", err.Error())
 				logger.Error("downloader: ensure your directory exists if you have \"no such file or directory\" error")
-				os.Exit(1)
+				break pidloop
+			case <-ctx.Done():
+				logger.Log("downloader: finishing")
+				break pidloop
 			default:
 			}
 
 			err := d.sem.Acquire(context.Background(), 1)
 			if err != nil {
-				cancel() // fucking warnings
 				return err
 			}
 
@@ -177,30 +179,14 @@ func (d *Downloader) Download() error {
 				logger.Logf("downloader: downloaded %s, %d/%d", post.Image, current, count)
 			}(post)
 		}
-
-		// donech := make(chan any)
-		// go func() {
-		// 	d.wg.Done()
-		// 	donech <- nil
-		// }()
-
-		// select {
-		// case err := <-errch:
-		// 	cancel()
-
-		// 	logger.Errorf("downloader: error: %s", err.Error())
-		// 	logger.Error("downloader: ensure your directory exists if you have \"no such file or directory\" error")
-		// 	os.Exit(1)
-		// case <-donech:
-		// }
 	}
 
 	d.wg.Wait()
-	cancel() // idk why but it fixes the error
+	cancel()
 
 	if d.progressbarInstance != nil {
 		d.progressbarInstance.Clear()
 	}
 
-	return nil
+	return
 }
