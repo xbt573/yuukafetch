@@ -1,0 +1,34 @@
+# Show verbose information instead of progressbar
+verbose: false
+
+# Output nothing, only errors
+quiet: false
+
+# Chooser command
+# If you are on linux — use feh for images and mpv for images and videos (it's a little bit slower)
+# Default is feh, which is only works for images!!!
+#chooser: ["feh", "-."]
+
+# Gelbooru user API Key
+#api_key: xd
+
+# Gelbooru user ID
+#user_id: 0
+
+# Download list
+downloads:
+  # Download name, shows to identify downloads
+  - name: default
+    # true to autodownload, false to skip if not specified explicitly
+    autodownload: true
+    # Download tags
+    tags: ""
+    # Download last id, just do some big number to download all
+    lastid: 999999999999
+    # Directory to place downloaded images (or videos)
+    outputdir: "./output"
+    # Directory to pick (move) images (or videos) to
+    pickdir: "./pick"
+    # Directories to check downloaded images (or videos) in, aside from output directory
+    checkdirs:
+      - ./pick
