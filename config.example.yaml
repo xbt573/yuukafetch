@@ -26,8 +26,8 @@ downloads:
     autodownload: true
     # Download tags
     tags: ""
-    # Download last id, just do some big number to download all
-    lastid: 999999999999
+    # Download last id, set to 0 to download all
+    lastid: 0
     # Directory to place downloaded images (or videos)
     outputdir: "./output"
     # Directory to pick (move) images (or videos) to

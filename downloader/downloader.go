@@ -17,6 +17,7 @@ import (
 type Downloader struct {
 	showProgressbar     bool
 	tags                string
+	lastid              int
 	outputDir           string
 	checkDirs           []string
 	gelbooruOptions     gelbooru.GelbooruOptions
@@ -27,9 +28,10 @@ type Downloader struct {
 
 type DownloaderOptions struct {
 	ShowProgressbar bool
+	Tags            string
+	LastId          int
 	OutputDir       string
 	CheckDirs       []string
-	Tags            string
 	GelbooruOptions gelbooru.GelbooruOptions
 	DownloadThreads uint
 }
@@ -38,6 +40,7 @@ func NewDownloader(options DownloaderOptions) *Downloader {
 	return &Downloader{
 		showProgressbar: options.ShowProgressbar,
 		tags:            options.Tags,
+		lastid:          options.LastId,
 		outputDir:       options.OutputDir,
 		checkDirs:       options.CheckDirs,
 		gelbooruOptions: options.GelbooruOptions,
@@ -121,6 +124,7 @@ pidloop:
 		logger.Logf("downloader: fetching page %d", pid+1) // normalizing page id for normal people
 		res, err := gelbooruInstance.Fetch(d.tags, pid, 0)
 		if err != nil {
+			cancel() // ну хуесосина блять
 			return err
 		}
 
@@ -130,6 +134,11 @@ pidloop:
 		}
 
 		for _, post := range res.Post {
+			if post.Id < d.lastid {
+				logger.Log("downloader: reached lastid, finishing")
+				break pidloop
+			}
+
 			select {
 			case err = <-errch:
 				logger.Errorf("downloader: error: %s", err.Error())
@@ -143,6 +152,7 @@ pidloop:
 
 			err := d.sem.Acquire(context.Background(), 1)
 			if err != nil {
+				cancel() // ну хуесосина блять
 				return err
 			}
 

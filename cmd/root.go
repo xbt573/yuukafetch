@@ -99,6 +99,7 @@ var fetchCmd = &cobra.Command{
 				OutputDir:       download.OutputDir,
 				CheckDirs:       download.CheckDirs,
 				Tags:            download.Tags,
+				LastId:          download.LastId,
 				DownloadThreads: configStruct.Threads,
 				GelbooruOptions: gelbooru.GelbooruOptions{
 					ApiKey: configStruct.ApiKey,

@@ -71,7 +71,7 @@ Explanation:
     * `name` — Download identifier, shows when downloading
     * `autodownload` — Set false to not download automatically, use `-d`/`--download` flag to manually download
     * `tags` — Gelbooru search tags
-    * `lastid` — Last downloaded post ID, fetcher stops when post ID is bigger than last ID, set to some enourmous number (like `999999999999`)
+    * `lastid` — Last downloaded post ID, fetcher stops when post ID is lesser than last ID, set to 0 to download all
     * `outputdir` — Directory to download files to, should exist!
     * `pickdir` — Directory to move files to if picked, should exist too!
     * `checkdirs` — Array of directories to check images, if image exists in those folders it will not be downloaded, may not exists
