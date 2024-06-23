@@ -15,6 +15,9 @@ quiet: false
 # Gelbooru user ID
 #user_id: 0
 
+# Threads to download files, default is 5
+threads: 5
+
 # Download list
 downloads:
   # Download name, shows to identify downloads

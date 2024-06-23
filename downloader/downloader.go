@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"runtime"
 	"sync"
 
 	"github.com/xbt573/yuukafetch/gelbooru"
@@ -32,6 +31,7 @@ type DownloaderOptions struct {
 	CheckDirs       []string
 	Tags            string
 	GelbooruOptions gelbooru.GelbooruOptions
+	DownloadThreads uint
 }
 
 func NewDownloader(options DownloaderOptions) *Downloader {
@@ -41,7 +41,7 @@ func NewDownloader(options DownloaderOptions) *Downloader {
 		outputDir:       options.OutputDir,
 		checkDirs:       options.CheckDirs,
 		gelbooruOptions: options.GelbooruOptions,
-		sem:             semaphore.NewWeighted(int64(runtime.NumCPU())),
+		sem:             semaphore.NewWeighted(int64(options.DownloadThreads)),
 	}
 }
 

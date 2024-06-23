@@ -32,6 +32,7 @@ Subcommands (yuukafetch modes):
 ### Fetch mode
 Arguments:
 * `-d`/`--download`: Download specific profile (ignores autodownload, skips other profiles), refer to config chapter
+* `-t`/`--thread`: Specify count of threads to download files
 
 ### Pick mode
 Arguments:
@@ -46,6 +47,7 @@ quiet: false
 chooser: ["feh", "-."]
 api_key: xd
 user_id: 0
+threads: 5
 
 downloads:
   - name: default
@@ -64,6 +66,7 @@ Explanation:
 * `chooser` — Equivalent to `--chooser` pick flag, except it's defined as yaml list/array
 * `api_key` — Equivalent to `--api_key` global flag
 * `user_id` — Equivalent to `--user_id` global flag
+* `threads` — Equivalent to `-t`/`--threads` fetch flag
 * `downloads` — Array of this structure:
     * `name` — Download identifier, shows when downloading
     * `autodownload` — Set false to not download automatically, use `-d`/`--download` flag to manually download

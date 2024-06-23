@@ -99,6 +99,7 @@ var fetchCmd = &cobra.Command{
 				OutputDir:       download.OutputDir,
 				CheckDirs:       download.CheckDirs,
 				Tags:            download.Tags,
+				DownloadThreads: configStruct.Threads,
 				GelbooruOptions: gelbooru.GelbooruOptions{
 					ApiKey: configStruct.ApiKey,
 					UserId: configStruct.UserId,
@@ -139,7 +140,11 @@ var fetchCmd = &cobra.Command{
 			}
 
 			if finishing || errored {
-				<-donech
+				select {
+				case <-donech:
+				case <-sigch:
+					break
+				}
 			}
 
 			if errored {
@@ -252,6 +257,7 @@ func init() {
 	rootCmd.PersistentFlags().Int("user_id", 0, "Gelbooru User ID")
 
 	fetchCmd.PersistentFlags().StringP("download", "d", "", "Download specific download profile")
+	fetchCmd.PersistentFlags().UintP("threads", "t", 5, "Number of threads to download arts")
 
 	var chooser []string
 
@@ -275,6 +281,7 @@ func init() {
 	viper.BindPFlag("user_id", rootCmd.PersistentFlags().Lookup("user_id"))
 
 	viper.BindPFlag("download", fetchCmd.PersistentFlags().Lookup("download"))
+	viper.BindPFlag("threads", fetchCmd.PersistentFlags().Lookup("threads"))
 
 	viper.BindPFlag("chooser", pickCmd.PersistentFlags().Lookup("chooser"))
 

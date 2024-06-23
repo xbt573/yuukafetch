@@ -6,6 +6,7 @@ type Config struct {
 	Chooser   []string   `yaml:"chooser"`
 	ApiKey    string     `yaml:"api_key"`
 	UserId    int        `yaml:"user_id"`
+	Threads   uint       `yaml:"threads"`
 	Downloads []Download `yaml:"downloads"`
 }
 
