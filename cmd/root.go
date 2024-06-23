@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -183,18 +184,40 @@ var pickCmd = &cobra.Command{
 
 			found = true
 
-			files, err := os.ReadDir(download.OutputDir)
+			dir, err := os.ReadDir(download.OutputDir)
 			if err != nil {
 				logger.Errorf("yuukafetch: error while getting files: %s", err.Error())
 				logger.Log("yuukafetch: ensure that output dir exist")
 				os.Exit(1)
 			}
 
+			files := []fs.DirEntry{}
+			moved := map[string]bool{}
+			previousChoice := ""
+
+			for _, file := range dir {
+				if !file.IsDir() {
+					files = append(files, file)
+				}
+			}
+
 			rand.Shuffle(len(files), func(i, j int) {
 				files[i], files[j] = files[j], files[i]
 			})
 
-			for _, file := range files {
+			for i := 0; i < len(files); i++ {
+				// for _, file := range files {
+				file := files[i]
+
+				switch {
+				case moved[file.Name()] && previousChoice == "b":
+					i -= 2
+					continue
+				case moved[file.Name()]:
+					fmt.Printf("Already moved %s, skipping...\n", file.Name())
+					continue
+				}
+
 				filePath := path.Join(download.OutputDir, file.Name())
 				pickPath := path.Join(download.PickDir, file.Name())
 
@@ -211,7 +234,7 @@ var pickCmd = &cobra.Command{
 
 			chooseloop:
 				for {
-					fmt.Printf("Keep %s? (Y/N): ", file.Name())
+					fmt.Printf("Keep %s? (Y/N/B): ", file.Name())
 
 					choice := ""
 					fmt.Scanln(&choice)
@@ -226,11 +249,26 @@ var pickCmd = &cobra.Command{
 							logger.Log("yuukafetch: ensure that outputdir and pickdir exist")
 							os.Exit(1)
 						}
+						moved[file.Name()] = true
+						previousChoice = "y"
 						break chooseloop
 
 					case "N":
 						fallthrough
 					case "n":
+						previousChoice = "n"
+						break chooseloop
+
+					case "B":
+						fallthrough
+					case "b":
+						if i == 0 {
+							fmt.Println("You can't back at first file, silly")
+							continue
+						}
+
+						i -= 2
+						previousChoice = "b"
 						break chooseloop
 
 					default:

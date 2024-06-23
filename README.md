@@ -39,6 +39,14 @@ Arguments:
 * Pick mode is only (for now) mode to require positional argument, it's download profile, example: `yuukafetch pick yuuka`
 * `--chooser`: Define chooser command, separated by commas, refer to recommendations chapter to choose best chooser (🐳)
 
+Pick mode is easy:
+1. Yuukafetch launcher chooser cmd to show you file
+2. You enter one of following values and press enter:
+    1. `y`/`Y`: To move picture to pickdir
+    2. `n`/`N`: To not move picture to pickdir/skip
+    3. `b`/`B`: Return to previous file
+3. You Ctrl+C when you picked enough files
+
 ## Config
 Sample config:
 ```yaml
